@@ -37,13 +37,14 @@ Fleet/transportation management system. NestJS backend + React frontend.
 # SSH into app node
 ssh gray-bsa@100.66.168.82
 
-# Redeploy after pushing code changes
-cd ~/apps/bsa_system && git fetch origin && git reset --hard origin/main
-sudo -n docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build
+# Redeploy after pushing code changes (single script: update → rebuild → up → migrations → healthcheck)
+cd ~/apps/bsa_system && bash scripts/prod/run-prod.sh
 
 # Logs / status
 sudo -n docker compose -f docker-compose.yml -f docker-compose.production.yml ps
 sudo -n docker compose -f docker-compose.yml -f docker-compose.production.yml logs -f bsa-backend
+
+# Migrations only (no rebuild): docker exec bsa-backend node scripts/run-migrations.js
 
 # nginx
 sudo -n nginx -t && sudo -n systemctl reload nginx
