@@ -5,13 +5,13 @@
 # base file's ${VAR:?...} substitutions. The remote Postgres (gray-db) is reached
 # over Tailscale by setting DATABASE_HOST in .env to the tailnet IP/hostname.
 services:
-  mosv2-backend:
+  bsa-backend:
     environment:
       SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-}
       SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
       SUPERADMIN_NAME: ${SUPERADMIN_NAME:-Super Admin}
 
-  mosv2-frontend:
+  bsa-frontend:
     build:
       args:
         # Empty API URLs force the browser to use same-origin /api (proxied by

@@ -1,4 +1,4 @@
-# MOSV2 — base compose file. Always combine with an overlay; do not use alone.
+# BSA — base compose file. Always combine with an overlay; do not use alone.
 #
 # ── Mac / local staging (no external DB, secrets via env): ───────────────────
 #   DATABASE_PASSWORD=dummy \
@@ -9,28 +9,20 @@
 #     -f docker-compose.yml \
 #     -f docker-compose.production.yml \
 #     up -d --build
-#
-# ── Linux production with Tailscale: ─────────────────────────────────────────
-#   MOSV2_TAILSCALE_IP=100.85.227.21 \
-#   docker compose \
-#     -f docker-compose.yml \
-#     -f docker-compose.production.yml \
-#     -f docker-compose.tailscale.yml \
-#     up -d --build
 
 services:
-  redis:
+  bsa-redis:
     image: redis:7-alpine
-    container_name: mosv2-redis
+    container_name: bsa-redis
     restart: unless-stopped
     networks:
-      - mosv2-net
+      - bsa-net
 
-  mosv2-backend:
+  bsa-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: mosv2-backend
+    container_name: bsa-backend
     restart: unless-stopped
     ports:
       - "127.0.0.1:8181:8181"
@@ -38,40 +30,40 @@ services:
       - ./backend/storage:/app/storage
     environment:
       APP_ENV: production
-      REDIS_HOST: redis
+      REDIS_HOST: bsa-redis
       REDIS_PORT: 6379
       MONTHLY_REPORT_STORAGE_ROOT: /app/storage/monthly-report
       TRUST_PROXY: "true"
       TRUST_PROXY_DEPTH: "1"
-      DATABASE_HOST: ${DATABASE_HOST:-mosv2-postgres}
+      DATABASE_HOST: ${DATABASE_HOST:-bsa-postgres}
       DATABASE_PORT: ${DATABASE_PORT:-5432}
       DATABASE_USER: ${DATABASE_USER:-postgres}
-      DATABASE_NAME: ${DATABASE_NAME:-mosv2_local}
+      DATABASE_NAME: ${DATABASE_NAME:-bsa_local}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       SIGNATURE_ENCRYPTION_KEY: ${SIGNATURE_ENCRYPTION_KEY:?SIGNATURE_ENCRYPTION_KEY is required}
       BSA_INTERNAL_API_KEY: ${BSA_INTERNAL_API_KEY:?BSA_INTERNAL_API_KEY is required}
     depends_on:
-      - redis
+      - bsa-redis
     networks:
-      - mosv2-net
+      - bsa-net
 
-  mosv2-frontend:
+  bsa-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
        VITE_API_BASE_URL: http://localhost:8181/api
        VITE_API_URL: http://localhost:8181/api
-    container_name: mosv2-frontend
+    container_name: bsa-frontend
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:80"
     depends_on:
-      - mosv2-backend
+      - bsa-backend
     networks:
-      - mosv2-net
+      - bsa-net
 
 networks:
-  mosv2-net:
+  bsa-net:
     driver: bridge

@@ -6,14 +6,16 @@ Fleet/transportation management system. NestJS backend + React frontend.
 
 **App node** — `gray-bsa`, Tailscale `100.66.168.82`, Ubuntu 24.04
 
-- SSH (Tailscale keyless): `ssh root@100.66.168.82`
-- App code: `/opt/bsa_system` (git clone of this repo, branch `main`)
+- SSH (key-based, admin user): `ssh gray-bsa@100.66.168.82`
+- Root SSH disabled (sshd `PermitRootLogin no` + root account locked + Tailscale
+  SSH off). Admin tasks run via `sudo -n` (passwordless) as `gray-bsa`.
+- App code: `~/apps/bsa_system` (git clone of this repo, branch `main`, owned by `gray-bsa`)
 - Stack: Docker Compose — `docker-compose.yml` + `docker-compose.production.yml`
-  - `mosv2-backend` → `127.0.0.1:8181` (NestJS, global prefix `/api`)
-  - `mosv2-frontend` → `127.0.0.1:8080` (nginx serving the SPA)
-  - `mosv2-redis` → internal only
+  - `bsa-backend` → `127.0.0.1:8181` (NestJS, global prefix `/api`)
+  - `bsa-frontend` → `127.0.0.1:8080` (nginx serving the SPA)
+  - `bsa-redis` → internal only
   - All containers `restart: unless-stopped`
-- Secrets: `/opt/bsa_system/.env` (gitignored — DB, JWT, superadmin)
+- Secrets: `~/apps/bsa_system/.env` (gitignored — DB, JWT, superadmin)
 - Host nginx: `/etc/nginx/sites-available/bsa` (enabled) — port 80: `/api/` → 8181, `/` → 8080
 
 **Database** — `gray-db`, Tailscale `100.65.197.43`
@@ -27,40 +29,37 @@ Fleet/transportation management system. NestJS backend + React frontend.
 ## Secrets (never commit)
 
 - `backend/.env.production` (local, gitignored) — canonical secret values
-- Node `/opt/bsa_system/.env` — what the running stack actually uses
+- Node `~/apps/bsa_system/.env` — what the running stack actually uses
 
 ## Common ops
 
 ```bash
 # SSH into app node
-ssh root@100.66.168.82
+ssh gray-bsa@100.66.168.82
 
 # Redeploy after pushing code changes
-cd /opt/bsa_system && git fetch origin && git reset --hard origin/main
-docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build
+cd ~/apps/bsa_system && git fetch origin && git reset --hard origin/main
+sudo -n docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build
 
 # Logs / status
-docker compose -f docker-compose.yml -f docker-compose.production.yml ps
-docker compose -f docker-compose.yml -f docker-compose.production.yml logs -f mosv2-backend
+sudo -n docker compose -f docker-compose.yml -f docker-compose.production.yml ps
+sudo -n docker compose -f docker-compose.yml -f docker-compose.production.yml logs -f bsa-backend
 
 # nginx
-nginx -t && systemctl reload nginx
+sudo -n nginx -t && sudo -n systemctl reload nginx
 ```
 
-## Handoff — finish the Cloudflare tunnel
+## Cloudflare tunnel — DONE (2026-08-14)
 
-Blocked on: opencode restart + Cloudflare OAuth.
+Public hostname: `https://bsa.comsys.me` → `http://localhost:80` on gray-bsa.
 
-1. Restart opencode (MCP config is not hot-reloaded).
-2. The `cloudflare-api` MCP (`https://mcp.cloudflare.com/mcp`) is registered in
-   `~/.config/opencode/opencode.jsonc`. First use triggers an OAuth browser
-   login — approve with `Cloudflare Tunnel:Edit` + `DNS:Edit` on the `comsys.me`
-   zone.
-3. Create a tunnel and route the public hostname `bsa.comsys.me` (confirm the
-   exact subdomain with the operator) to `http://localhost:80` on gray-bsa.
-4. On the node, run cloudflared against that tunnel (already installed,
-   v2026.8.1), e.g. `cloudflared service install <TUNNEL_TOKEN>`, then
-   `systemctl enable --now cloudflared`.
-5. Verify end-to-end:
-   - `curl -s https://bsa.comsys.me/` → title "BSA System"
-   - `curl -s -X POST https://bsa.comsys.me/api/auth/login -H "Content-Type: application/json" -d '{"email":"admin@bsa.local","password":"<SUPERADMIN_PASSWORD>"}'` → 201 + JWT
+- Tunnel: `bsa`, ID `87eeec6a-01b1-4e3a-ada1-9223700435cc`, remote config
+  (ingress managed via Cloudflare API/dashboard).
+- DNS: `bsa.comsys.me` CNAME → `87eeec6a-01b1-4e3a-ada1-9223700435cc.cfargotunnel.com` (proxied).
+- Node: `cloudflared.service` (systemd, enabled) running token-based install,
+  v2026.8.1.
+- Verified: `GET /` → 200 title "BSA System"; `POST /api/auth/login` → 201 + JWT.
+
+Reinstall after node rebuild: re-create the tunnel token from the dashboard
+(Tunnels → bsa → Configure → Reinstall), then on the node:
+`cloudflared service install <TUNNEL_TOKEN> && systemctl enable --now cloudflared`.
