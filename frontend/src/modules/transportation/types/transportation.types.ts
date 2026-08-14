@@ -174,6 +174,7 @@ export interface CreateTransportationRequestDto {
   contactNumber?: string;
   passengerCount: number;
   preferredVehicleType?: string;
+  requestedAssignmentPool?: string;
   specialInstructions?: string;
   scheduledPickupAt: string;
   expectedReturnAt?: string;

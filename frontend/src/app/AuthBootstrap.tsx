@@ -8,7 +8,6 @@ import { startSession } from "../lib/session";
 
 export function AuthBootstrap({ children }: PropsWithChildren) {
   const setUser = useAuthStore((state) => state.setUser);
-  const user = useAuthStore((state) => state.user);
   const { setPreference } = useTheme();
 
   // Show splash only briefly — remove immediately on mount.

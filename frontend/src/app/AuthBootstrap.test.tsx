@@ -1,5 +1,5 @@
-import { render, screen, waitFor, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
 import { AuthBootstrap } from "./AuthBootstrap";
 
 vi.mock("../api/auth", () => ({ meRequest: vi.fn() }));
@@ -15,7 +15,7 @@ import { meRequest } from "../api/auth";
 import { useAuthStore } from "../features/auth/useAuthStore";
 
 function setupMocks(overrides: { user?: unknown; setUser?: unknown }) {
-  (useAuthStore as unknown as vi.Mock).mockImplementation(
+  (useAuthStore as unknown as Mock).mockImplementation(
     (selector: (state: unknown) => unknown) => {
       return selector({
         user: overrides.user ?? null,
@@ -64,7 +64,7 @@ describe("AuthBootstrap", () => {
   });
 
   it("calls meRequest in background after splash removal", async () => {
-    (meRequest as unknown as vi.Mock).mockResolvedValue({
+    (meRequest as unknown as Mock).mockResolvedValue({
       id: "u-1",
       name: "Test",
       themePreference: "light",
@@ -88,7 +88,7 @@ describe("AuthBootstrap", () => {
   });
 
   it("handles 401 in background without blocking children", async () => {
-    (meRequest as unknown as vi.Mock).mockRejectedValue(new Error("401"));
+    (meRequest as unknown as Mock).mockRejectedValue(new Error("401"));
     const setUser = vi.fn();
     setupMocks({ setUser });
 
@@ -106,7 +106,7 @@ describe("AuthBootstrap", () => {
   });
 
   it("handles network error in background without blocking children", async () => {
-    (meRequest as unknown as vi.Mock).mockRejectedValue(
+    (meRequest as unknown as Mock).mockRejectedValue(
       new Error("Network Error"),
     );
     const setUser = vi.fn();

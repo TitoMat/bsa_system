@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getFleetAnalytics } from '../../transportation/api/transportation.api';
-import type { AnalyticsResponse } from '../../transportation/api/transportation.api';
 
 const PERIOD_OPTIONS = [
   { value: 'today', label: 'Today' },
