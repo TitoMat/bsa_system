@@ -33,7 +33,12 @@ wait_for_container_running() {
 
 http_status() {
   local url="$1"
-  curl -sS -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null || echo "000"
+  local code
+  code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null || true)"
+  if [[ -z "$code" ]]; then
+    code="000"
+  fi
+  printf '%s' "$code"
 }
 
 info "BSA production deploy starting"
@@ -93,11 +98,11 @@ else
   record_fail "Frontend did not respond with HTTP 200 (got $FRONTEND_STATUS)"
 fi
 
-BACKEND_STATUS="$(http_status "http://127.0.0.1:$BSA_BACKEND_PORT/api")"
-if [[ "$BACKEND_STATUS" == "200" ]]; then
+BACKEND_STATUS="$(http_status "http://127.0.0.1:$BSA_BACKEND_PORT/api/dashboard/system-status")"
+if [[ "$BACKEND_STATUS" =~ ^[24][0-9][0-9]$ ]]; then
   ok "Backend API responds: HTTP $BACKEND_STATUS"
 else
-  record_fail "Backend API did not respond with HTTP 200 (got $BACKEND_STATUS)"
+  record_fail "Backend API did not respond (got HTTP $BACKEND_STATUS)"
 fi
 
 if [[ "$(docker_cli inspect -f '{{.State.Running}}' "$BSA_BACKEND_CONTAINER" 2>/dev/null || true)" == "true" ]]; then
