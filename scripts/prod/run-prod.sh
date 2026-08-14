@@ -81,7 +81,7 @@ wait_for_container_running "$BSA_FRONTEND_CONTAINER" || true
 
 if [[ "$(docker_cli inspect -f '{{.State.Running}}' "$BSA_BACKEND_CONTAINER" 2>/dev/null || true)" == "true" ]]; then
   info "Running backend migrations"
-  docker_cli exec -T "$BSA_BACKEND_CONTAINER" node scripts/run-migrations.js
+  docker_compose exec -T "$BSA_BACKEND_CONTAINER" node scripts/run-migrations.js
   ok "Backend migrations completed"
 else
   record_fail "Backend container not running; migrations skipped"
