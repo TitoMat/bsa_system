@@ -1,0 +1,51 @@
+{
+	// ── Hosts ──────────────────────────────────────────────────────────────
+	"hosts": {
+		"mosv2":       "100.85.227.21",
+		"gray-db":     "100.65.197.43",
+		"fgs-auto":    "100.99.163.62",
+		"mat-local":   "100.76.27.54",
+		"proxmox":     "100.85.59.15",
+		"gray-n8n":    "100.110.150.94",
+		"gray-ollama": "100.70.203.121",
+		"samsung-tab": "100.77.187.47",
+		"iphone":      "100.123.109.23",
+		"bsa":         "100.XXX.XXX.XXX" // ← FILL: Tailscale IP ng BSA app node (mini PC / office PC)
+	},
+
+	// ── Grants ─────────────────────────────────────────────────────────────
+	"grants": [
+		{ "src": ["fgs-auto", "mat-local"], "dst": ["mosv2"], "ip": ["tcp:8080", "tcp:8181"] },
+		{ "src": ["mat-local", "fgs-auto"], "dst": ["mosv2", "gray-db"], "ip": ["tcp:22"] },
+		{ "src": ["mat-local"], "dst": ["gray-n8n"], "ip": ["tcp:22"] },
+		{ "src": ["gray-db"], "dst": ["gray-n8n"], "ip": ["tcp:22"] },
+		{ "src": ["mosv2"], "dst": ["gray-db"], "ip": ["tcp:5432", "tcp:2049"] },
+		{ "src": ["mat-local", "samsung-tab"], "dst": ["proxmox"], "ip": ["tcp:22", "tcp:8006"] },
+		{ "src": ["gray-n8n"], "dst": ["fgs-auto"], "ip": ["tcp:22"] },
+		{ "src": ["mat-local", "fgs-auto", "gray-n8n"], "dst": ["gray-ollama"], "ip": ["tcp:11434"] },
+		{ "src": ["mat-local", "fgs-auto"], "dst": ["gray-ollama"], "ip": ["tcp:22"] },
+		{ "src": ["gray-ollama"], "dst": ["gray-db"], "ip": ["tcp:22", "tcp:5432"] },
+		{ "src": ["iphone"], "dst": ["fgs-auto"], "ip": ["tcp:8181", "tcp:445"] },
+
+		// ── BSA System (bago) ──────────────────────────────────────────────
+		{ "src": ["bsa"], "dst": ["gray-db"], "ip": ["tcp:5432"] },
+		{ "src": ["mat-local", "fgs-auto", "samsung-tab"], "dst": ["bsa"], "ip": ["tcp:8080", "tcp:8181"] },
+		{ "src": ["mat-local"], "dst": ["bsa"], "ip": ["tcp:22"] }
+
+		// ── Optional (pag isinama na ang n8n integration) ──────────────────
+		// { "src": ["gray-n8n"], "dst": ["bsa"], "ip": ["tcp:8181"] },
+		// { "src": ["bsa"], "dst": ["gray-n8n"], "ip": ["tcp:5678"] }
+	],
+
+	// ── Tailscale SSH (keyless) ────────────────────────────────────────────
+	// Hindi na ito kailangang baguhin. Para gumana sa gray-db/bsa,
+	// i-run lang sa mismong node:  sudo tailscale set --ssh
+	"ssh": [
+		{
+			"action": "check",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:self"],
+			"users":  ["autogroup:nonroot", "root"]
+		}
+	]
+}

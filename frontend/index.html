@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BSA System</title>
+
+    <script>
+      (() => {
+        try {
+          const key = "bsa-system-theme";
+          const saved = localStorage.getItem(key) || "system";
+          const isDarkSystem = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+
+          const resolved =
+            saved === "system"
+              ? isDarkSystem
+                ? "dark"
+                : "light"
+              : saved;
+
+          document.documentElement.dataset.theme = resolved;
+          document.documentElement.dataset.themePreference = saved;
+        } catch {
+          document.documentElement.dataset.theme = "light";
+          document.documentElement.dataset.themePreference = "system";
+        }
+      })();
+    </script>
+
+    <style>
+      html,
+      body,
+      #root {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        overflow: hidden;
+        font-family: "Plus Jakarta Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(circle at top left, rgba(135, 174, 115, 0.16), transparent 32%),
+          radial-gradient(circle at bottom right, rgba(188, 212, 176, 0.12), transparent 30%),
+          linear-gradient(135deg, #2c2b30, #25242a 45%, #1e1d22);
+        z-index: 9999;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
+      }
+
+      #boot-splash.hide {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .boot-shell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .boot-logo {
+        width: 52px;
+        height: 52px;
+        object-fit: contain;
+      }
+
+      .boot-bar {
+        width: 140px;
+        height: 4px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        position: relative;
+      }
+
+      .boot-bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #87AE73, #6F965C);
+        animation: boot-slide 1s ease-in-out infinite;
+      }
+
+      @keyframes boot-slide {
+        0% {
+          transform: translateX(-120%);
+        }
+        100% {
+          transform: translateX(320%);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="boot-splash">
+      <div class="boot-shell">
+        <img src="/favicon.svg" alt="BSA System" class="boot-logo" />
+        <div class="boot-bar"></div>
+      </div>
+    </div>
+
+<div id="root"></div>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+# Map infrastructure services for offline routing and geocoding
+version: '3.8'
+
+services:
+  # OSRM - Open Source Routing Machine for route calculation
+  osrm:
+    image: osrm/osrm-backend:v5.11.0
+    # Note: requires .osrm file for the Philippines area, which is not included due to size constraints
+    # For now, uses the public OSRM server in the backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./osrm-data:/data
+    command: "osrm-routed --max-table-size 1000 --max-jobs 3 /data/filippines.osrm"
+    restart: unless-stopped
+    profiles:
+      - maps
+
+  # Nominatim - OpenStreetMap geocoding service
+  nominatim:
+    image: mediagoblin/nominatim:1.2.1
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      - NOMINATIM_PBF_URL=https://download.geofabrik.de/asia/philippines-latest.osm.pbf
+      - NOMINATIM_HOST=0.0.0.0
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=nominatim
+      - POSTGRES_USER=nominatim
+      - POSTGRES_PASSWORD=change_me_in_production
+      - REVERSE_GEOCODE_TIMEOUT=10
+      - SEARCH_TIMEOUT=10
+      - OVERPASS_TIMEOUT=5
+      - QUEUE_TIMEOUT=30
+      - IMPORT_WHOLE_DB=0
+      - SKIP_COMPLETE_IMPORT=0
+      - THREADS=2
+      - MAX_CONNECTIONS_PER_HOUR=50
+      - MAX_REQUESTS_PER_MINUTE=10
+      - LIMIT_REQUESTS_PER_SECOND=0.5
+      - DOWNLOAD_WARNING_LIMIT=7
+      - TIMEOUT=120
+    volumes:
+      - ./nominatim-data:/var/lib/postgresql/12/main
+    restart: unless-stopped
+    profiles:
+      - maps
+
+  # Valhalla - Open source routing backend
+  valhalla:
+    image: valhalla/valhalla:latest
+    ports:
+      - "8002:8002"
+    environment:
+      - TILE_DIR=/data/tiles
+      - COSTING_OPTIONS=[{"auto": {"type": "auto"}}, {"pedestrian": {"type": "pedestrian"}}, {"bicycle": {"type": "bicycle"}}]
+      - ALLOW_NONE_BEST_PATH=false
+      - ALT_QUALITY=1
+      - MAX_DISTANCE=5000
+      - DEFAULT_SERVER_TIMEOUT=30
+      - LOG_LEVEL=info
+    volumes:
+      - ./valhalla-data:/data
+    restart: unless-stopped
+    profiles:
+      - maps
+
+  # Map tile server for vector tiles
+  tile-server:
+    image: ghcr.io/wrtnlabs/renderd:latest
+    depends_on:
+      - nominatim
+    ports:
+      - "8080:8080"
+    environment:
+      - RENDERD_CONFIG=/etc/renderd/renderd.conf
+    volumes:
+      - ./renderd-config:/etc/renderd
+    restart: unless-stopped
+    profiles:
+      - maps
+
+volumes:
+  osrm-data:
+    driver: local
+  nominatim-data:
+    driver: local
+  valhalla-data:
+    driver: local
+  renderd-config:
+    driver: local

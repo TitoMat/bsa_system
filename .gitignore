@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+
+# logs
+*.log
+*.log.*
+npm-debug.log*
+
+# environment — never track real secrets. Use .env.example templates instead.
+.env*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# local storage
+backend/storage/
+
+# artifacts
+*.csv
+*.zip
+*.tar.gz
+
+# database
+db_backups/
+
+# tooling
+.aider*
+.claude/

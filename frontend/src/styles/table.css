@@ -1,0 +1,649 @@
+.table-shell {
+  overflow: hidden;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-xl);
+  background: var(--table-bg);
+}
+
+.table-shell .table-scroll {
+  overflow-x: auto;
+}
+
+.table-shell table {
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.table-shell thead {
+  background: var(--table-header-bg);
+}
+
+.table-shell th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--table-header-text);
+}
+
+.table-shell th.text-center {
+  text-align: center;
+}
+
+.table-shell td {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--table-cell-text);
+}
+
+.table-shell tbody tr {
+  background: var(--table-row-bg);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.table-shell tbody tr + tr {
+  border-top: 1px solid var(--table-divider);
+}
+
+.table-shell.table-striped tbody tr:nth-child(even) {
+  background: var(--table-row-alt-bg);
+}
+
+.table-shell tbody tr:hover {
+  background: var(--table-row-hover-bg);
+}
+
+.table-shell tbody tr.selected {
+  background: var(--table-row-selected-bg);
+}
+
+.table-shell .table-cell-muted {
+  color: var(--table-cell-text-muted);
+}
+
+.table-shell .table-empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--table-empty-text);
+  font-size: 13px;
+}
+
+/* Focus Mode — sidebar + topbar hidden, workspace fills screen */
+body[data-focus-mode="true"] #app-shell > aside {
+  display: none;
+}
+body[data-focus-mode="true"] #app-shell > div > .relative.shrink-0:first-child {
+  display: none;
+}
+body[data-focus-mode="true"] #app-shell main {
+  padding: 0 !important;
+}
+
+/* Repository table zebra — used outside .table-shell context */
+.repo-table-zebra tbody tr:nth-child(even) {
+  background: var(--table-row-alt-bg);
+}
+
+/* ============================================================
+   Annual repository matrix (shared annual matrix table)
+   ============================================================ */
+
+.repo-matrix-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.repo-matrix-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.repo-matrix-shell .table-scroll {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Edge fade overlays when the table can scroll horizontally */
+.repo-matrix-shell .repo-matrix-fade {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  z-index: 40;
+}
+
+.repo-matrix-shell .repo-matrix-fade--left {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg-surface), transparent);
+}
+
+.repo-matrix-shell .repo-matrix-fade--right {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg-surface), transparent);
+}
+
+.repo-matrix {
+  min-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.repo-matrix thead {
+  background: transparent;
+}
+
+.repo-matrix th,
+.repo-matrix td {
+  padding: 0;
+}
+
+.repo-matrix .repo-matrix-month-col {
+  width: var(--repo-matrix-month-col-width);
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  white-space: nowrap;
+  background: inherit;
+}
+
+.repo-matrix thead .repo-matrix-month-col {
+  padding: 0 var(--space-4);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--table-header-text);
+}
+
+.repo-matrix tbody .repo-matrix-month-col {
+  padding: 0 var(--space-4);
+  text-align: left;
+  font-size: 13px;
+  color: var(--table-cell-text);
+}
+
+.repo-matrix .repo-matrix-header-row {
+  position: sticky;
+  z-index: 30;
+}
+
+.repo-matrix .repo-matrix-header-row--h1 {
+  top: 0;
+  height: var(--repo-matrix-header-h1);
+  background: var(--color-bg-subtle);
+  z-index: 30;
+}
+
+.repo-matrix .repo-matrix-header-row--h2 {
+  top: var(--repo-matrix-header-offset-1);
+  height: var(--repo-matrix-header-h2);
+  background: var(--color-bg-surface-soft);
+  z-index: 29;
+}
+
+.repo-matrix .repo-matrix-header-row--h3 {
+  top: var(--repo-matrix-header-offset-2);
+  height: var(--repo-matrix-header-h3);
+  background: var(--color-bg-surface);
+  z-index: 28;
+}
+
+/* Shared sticky header rows — used by both the annual and customer attendance matrices */
+.repo-matrix-header-row {
+  position: sticky;
+  z-index: 30;
+}
+
+.repo-matrix-header-row--h1 {
+  top: 0;
+  height: var(--repo-matrix-header-h1);
+  background: var(--color-bg-subtle);
+  z-index: 30;
+}
+
+.repo-matrix-header-row--h2 {
+  top: var(--repo-matrix-header-offset-1);
+  height: var(--repo-matrix-header-h2);
+  background: var(--color-bg-surface-soft);
+  z-index: 29;
+}
+
+.repo-matrix-header-row--h3 {
+  top: var(--repo-matrix-header-offset-2);
+  height: var(--repo-matrix-header-h3);
+  background: var(--color-bg-surface);
+  z-index: 28;
+}
+
+.repo-matrix .repo-matrix-jv-header {
+  padding: var(--space-1) var(--space-3);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.repo-matrix .repo-matrix-schema-header {
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.repo-matrix tbody tr,
+.repo-matrix-ca tbody tr {
+  background: var(--table-row-bg);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.repo-matrix tbody tr + tr,
+.repo-matrix-ca tbody tr + tr {
+  border-top: 1px solid var(--table-divider);
+}
+
+.repo-matrix tbody tr:nth-child(even),
+.repo-matrix-ca tbody tr:nth-child(even) {
+  background: var(--table-row-alt-bg);
+}
+
+.repo-matrix tbody tr:hover,
+.repo-matrix-ca tbody tr:hover {
+  background: var(--table-row-hover-bg);
+}
+
+/* JV/offering group divider — stronger than the row divider, aligned to group bounds */
+.repo-matrix-cell-td--jv-break {
+  box-shadow: inset 1px 0 0 var(--color-border-strong);
+}
+
+/* Sticky row-label column (Month for annual, Date for customer attendance) */
+.repo-matrix-row-col {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  white-space: nowrap;
+  background: inherit;
+}
+
+.repo-matrix-ca thead .repo-matrix-row-col {
+  width: var(--repo-matrix-date-col-width);
+  padding: 0 var(--space-3);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--table-header-text);
+}
+
+.repo-matrix-ca tbody .repo-matrix-row-col {
+  width: var(--repo-matrix-date-col-width);
+  padding: 0 var(--space-3);
+  text-align: left;
+  font-size: 12px;
+  color: var(--table-cell-text);
+}
+
+/* Cell input (rendered inside a zero-padding td) */
+.repo-matrix-cell {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 38px;
+  min-width: var(--repo-matrix-cell-min-width);
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-disabled);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  outline: none;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.repo-matrix-cell::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.repo-matrix-cell--has-value {
+  color: var(--color-text-secondary);
+}
+
+.repo-matrix-cell:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.repo-matrix-cell--dirty {
+  background: var(--color-warning-soft);
+  border-color: var(--color-warning-border);
+  color: var(--color-warning);
+}
+
+.repo-matrix-cell--dirty:focus-visible {
+  border-color: var(--color-warning-border);
+  outline-color: var(--color-warning-border);
+  background: var(--color-warning-soft);
+}
+
+.repo-matrix-cell--invalid {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+.repo-matrix-cell--invalid:focus-visible {
+  border-color: var(--color-danger-border);
+  outline-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
+}
+
+.repo-matrix-cell--read-only {
+  cursor: default;
+}
+
+.repo-matrix-cell--read-only:hover {
+  background: transparent;
+}
+
+.repo-matrix-cell--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Focus Mode — taller rows for comfort */
+body[data-focus-mode="true"] .repo-matrix-cell {
+  height: 44px;
+  font-size: 13px;
+}
+
+body[data-focus-mode="true"] .repo-matrix tbody .repo-matrix-month-col {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+/* ============================================================
+   Customer attendance matrix (dynamic columns, day rows)
+   ============================================================ */
+
+.repo-matrix-ca {
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.repo-matrix-ca thead {
+  background: transparent;
+}
+
+.repo-matrix-ca th,
+.repo-matrix-ca td {
+  padding: 0;
+}
+
+.repo-matrix-ca .repo-matrix-ca-header-cell {
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.repo-matrix-ca .repo-matrix-header-row--h1 .repo-matrix-ca-header-cell {
+  color: var(--color-text-primary);
+}
+
+.repo-matrix-ca .repo-matrix-header-row--h2 .repo-matrix-ca-header-cell {
+  color: var(--color-text-secondary);
+}
+
+.repo-matrix-ca .repo-matrix-header-row--h3 .repo-matrix-ca-header-cell {
+  color: var(--color-text-muted);
+}
+
+.repo-matrix-ca tbody .repo-matrix-cell {
+  min-width: var(--repo-matrix-cell-min-width);
+}
+
+/* Month unique count summary row */
+body .repo-matrix-ca tbody tr.repo-matrix-ca-summary-row,
+body .repo-matrix-ca tbody tr.repo-matrix-ca-summary-row:hover {
+  background: var(--color-brand-soft);
+}
+
+body .repo-matrix-ca tbody tr.repo-matrix-ca-summary-row .repo-matrix-row-col {
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+/* Focus Mode — taller rows for comfort */
+body[data-focus-mode="true"] .repo-matrix-ca tbody .repo-matrix-row-col {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+/* ============================================================
+   Aging of Funds workflow (sticky row label + grouped headers)
+   ============================================================ */
+
+.repo-matrix-aging {
+  min-width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.repo-matrix-aging thead {
+  background: transparent;
+}
+
+.repo-matrix-aging th,
+.repo-matrix-aging td {
+  padding: 0;
+}
+
+/* Sticky header rows — compact heights sized for the 28px workflow cells */
+.repo-matrix-aging .repo-matrix-header-row--h1 {
+  top: 0;
+  height: var(--repo-aging-header-h1);
+  background: var(--color-bg-subtle);
+  z-index: 30;
+}
+
+.repo-matrix-aging .repo-matrix-header-row--h2 {
+  top: var(--repo-aging-header-offset-1);
+  height: var(--repo-aging-header-h2);
+  background: var(--color-bg-surface-soft);
+  z-index: 29;
+}
+
+.repo-matrix-aging .repo-aging-head-label {
+  padding: 0 var(--space-2);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.repo-matrix-aging .repo-aging-head-label--group {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--color-text-primary);
+}
+
+/* Sticky Particulars column — spans both header rows */
+.repo-matrix-aging .repo-aging-particulars-head {
+  position: sticky;
+  left: 0;
+  z-index: 31;
+  min-width: var(--repo-aging-particulars-width);
+  padding: 0 var(--space-3);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--table-header-text);
+  background: var(--color-bg-subtle);
+}
+
+.repo-matrix-aging tbody .repo-aging-particulars {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: inherit;
+  white-space: nowrap;
+}
+
+/* Group separator — stronger than the row divider, aligned to group bounds */
+.repo-matrix-aging .repo-aging-group-break {
+  box-shadow: inset 1px 0 0 var(--color-border-strong);
+}
+
+/* Rows: zebra + hover */
+.repo-matrix-aging tbody tr {
+  background: var(--table-row-bg);
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.repo-matrix-aging tbody tr + tr {
+  border-top: 1px solid var(--table-divider);
+}
+
+.repo-matrix-aging tbody tr:nth-child(even) {
+  background: var(--table-row-alt-bg);
+}
+
+.repo-matrix-aging tbody tr:hover {
+  background: var(--table-row-hover-bg);
+}
+
+/* Manual TOTAL row — distinct background, never auto-calculated */
+.repo-matrix-aging tbody tr.repo-aging-total-row,
+.repo-matrix-aging tbody tr.repo-aging-total-row:hover {
+  background: var(--color-bg-subtle);
+}
+
+.repo-matrix-aging tbody tr.repo-aging-note-row,
+.repo-matrix-aging tbody tr.repo-aging-note-row:hover {
+  background: transparent;
+}
+
+.repo-matrix-aging tbody tr.repo-aging-empty-row,
+.repo-matrix-aging tbody tr.repo-aging-empty-row:hover {
+  background: transparent;
+}
+
+.repo-matrix-aging .repo-aging-note-cell {
+  padding: var(--space-2) var(--space-3);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.repo-matrix-aging .repo-aging-empty-cell {
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--table-empty-text);
+}
+
+/* Compact numeric cells — reuses the shared .repo-matrix-cell visual states */
+.repo-matrix-aging .repo-matrix-cell {
+  height: 28px;
+  min-width: var(--repo-aging-cell-min-width);
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+body[data-focus-mode="true"] .repo-matrix-aging .repo-matrix-cell {
+  height: 28px;
+}
+
+/* Editable text cells (Particulars / Remarks) */
+.repo-matrix-aging .repo-aging-text-cell {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  outline: none;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.repo-matrix-aging .repo-aging-text-cell::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.repo-matrix-aging .repo-aging-text-cell:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.repo-matrix-aging .repo-aging-text-cell--emphasis {
+  font-weight: 500;
+}
+
+.repo-matrix-aging .repo-aging-text-cell--strong {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ============================================================
+   Reduced motion — drop all table transitions
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .repo-matrix tbody tr,
+  .repo-matrix-ca tbody tr,
+  .repo-matrix-aging tbody tr,
+  .repo-matrix-cell,
+  .repo-matrix-aging .repo-aging-text-cell {
+    transition: none !important;
+  }
+}
+
+/* Focus Mode — compact viewport, no outer chrome, fades stay readable */
+body[data-focus-mode="true"] .repo-matrix-shell .repo-matrix-fade {
+  width: 20px;
+}

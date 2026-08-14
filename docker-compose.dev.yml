@@ -1,0 +1,82 @@
+# BSA System — Development compose file
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d --build
+#   docker compose -f docker-compose.dev.yml logs -f
+#   docker compose -f docker-compose.dev.yml down
+
+services:
+  bsa-postgres:
+    image: postgres:16-alpine
+    container_name: bsa-dev-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5436:5432"
+    env_file: .env.dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bsa-dev-net
+
+  bsa-redis:
+    image: redis:7-alpine
+    container_name: bsa-dev-redis
+    restart: unless-stopped
+    networks:
+      - bsa-dev-net
+
+  bsa-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: bsa-dev-backend
+    command: npm run start:dev
+    ports:
+      - "127.0.0.1:8182:8181"
+    env_file: .env.dev
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/storage:/app/storage
+    depends_on:
+      bsa-postgres:
+        condition: service_healthy
+      bsa-redis:
+        condition: service_started
+    networks:
+      - bsa-dev-net
+
+  bsa-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: bsa-dev-frontend
+    command: npx vite --host
+    ports:
+      - "127.0.0.1:5175:5173"
+    environment:
+      VITE_PROXY_TARGET: http://bsa-backend:8181
+      VITE_MAP_STYLE_URL: https://tiles.openfreemap.org/styles/liberty
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/public:/app/public
+    depends_on:
+      - bsa-backend
+    networks:
+      - bsa-dev-net
+
+volumes:
+  pgdata:
+
+networks:
+  bsa-dev-net:
+    driver: bridge

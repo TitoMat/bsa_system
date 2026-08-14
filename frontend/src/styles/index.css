@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./themes.css";
+@import "./table.css";
+@import "./dashboard.css";
+
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+html {
+  font-size: 14px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(33, 114, 121, 0.10),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 10% 100%,
+      rgba(153, 204, 200, 0.10),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      #F2F5F5 0%,
+      #EEF3F2 48%,
+      #E9F0EE 100%
+    );
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      circle at 82% 0%,
+      rgba(118, 197, 202, 0.08),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 12% 100%,
+      rgba(75, 172, 185, 0.05),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      #132022 0%,
+      #0F1B1C 50%,
+      #0C1618 100%
+    );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  border-radius: var(--radius-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
