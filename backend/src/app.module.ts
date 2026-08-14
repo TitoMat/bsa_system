@@ -13,6 +13,7 @@ import { TransportationModule } from './modules/transportation/transportation.mo
 import { SchedulingModule } from './modules/scheduling/scheduling.module';
 import { FleetDiagnosticsModule } from './modules/fleet-diagnostics/fleet-diagnostics.module';
 import { DispatchModule } from './modules/dispatch/dispatch.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 import { SeedService } from './database/seed.service';
 import { User } from './users/user.entity';
@@ -43,6 +44,7 @@ import { dataSourceOptions } from './database/data-source';
     SchedulingModule,
     FleetDiagnosticsModule,
     DispatchModule,
+    DashboardModule,
   ],
   providers: [SeedService],
 })

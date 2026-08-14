@@ -12,6 +12,7 @@ import { AuditService } from '../audit/audit.service';
 import { Role } from '../common/enums/role.enum';
 import { User } from '../users/user.entity';
 import {
+  PERMISSIONS,
   PERMISSION_GROUPS,
   ROLE_PERMISSIONS,
   type PermissionKey,
@@ -91,6 +92,26 @@ export class PermissionsService {
           ),
         );
       }
+    }
+
+    const validPermissions = new Set<string>(Object.values(PERMISSIONS));
+
+    const staleRoleRows = await this.rolePermissionRepo.find();
+    const staleRolePermissions = staleRoleRows
+      .filter((row) => !validPermissions.has(row.permission))
+      .map((row) => row.id);
+
+    if (staleRolePermissions.length > 0) {
+      await this.rolePermissionRepo.delete(staleRolePermissions);
+    }
+
+    const staleOverrides = await this.userPermissionOverrideRepo.find();
+    const staleOverrideIds = staleOverrides
+      .filter((row) => !validPermissions.has(row.permission))
+      .map((row) => row.id);
+
+    if (staleOverrideIds.length > 0) {
+      await this.userPermissionOverrideRepo.delete(staleOverrideIds);
     }
   }
 

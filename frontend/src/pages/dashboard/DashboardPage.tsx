@@ -2,10 +2,6 @@ import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert } from "../../shared/components/Alert";
 import { listUsersRequest } from "../../api/users";
-import {
-  fetchSystemStatus,
-  type SystemStatus,
-} from "./dashboard.api";
 import { KpiCard } from "../../shared/components";
 import { useAuthStore } from "../../features/auth/useAuthStore";
 import { hasPermission } from "../../lib/permissions";
@@ -77,21 +73,12 @@ export function DashboardPage() {
     return { active, inactive: total - active };
   }, [users]);
 
-  const {
-    refetch: refetchSystem,
-    isFetching: systemFetching,
-  } = useQuery<SystemStatus>({
-    queryKey: ["dashboard-system-status"],
-    queryFn: ({ signal }) => fetchSystemStatus(signal),
-  });
-
-  const isFetchingAny = usersFetching || systemFetching;
+  const isFetchingAny = usersFetching;
 
   const queryClient = useQueryClient();
 
   function handleRefreshAll() {
     void refetchUsers();
-    void refetchSystem();
     void queryClient.invalidateQueries({
       predicate: (query) =>
         typeof query.queryKey[0] === "string" &&
@@ -113,9 +100,7 @@ export function DashboardPage() {
 
       {usersError && <ErrorBanner message={usersErrorMessage} />}
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-        <SystemStatusCard />
-      </div>
+      <SystemStatusCard />
 
       {canViewUsers ? (
         <section>

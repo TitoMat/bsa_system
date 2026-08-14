@@ -59,31 +59,6 @@ export const sidebarItems: SidebarItem[] = [
     permission: "maps.view",
   },
   {
-    label: "Admin Panel",
-    icon: Settings,
-    permission: ["users.view", "audit_logs.view", "permissions.view"],
-    children: [
-      {
-        label: "Permission",
-        icon: ShieldCheck,
-        path: "/permission",
-        permission: "permissions.view",
-      },
-      {
-        label: "User Management",
-        icon: Users,
-        path: "/users",
-        permission: "users.view",
-      },
-      {
-        label: "Audit Logs",
-        icon: ScrollText,
-        path: "/audit-logs",
-        permission: "audit_logs.view",
-      },
-    ],
-  },
-  {
     label: "Admin Tools",
     icon: Wrench,
     permission: ["driver.view", "car.view"],
@@ -111,6 +86,31 @@ export const sidebarItems: SidebarItem[] = [
         icon: Car,
         path: "/fleet/vehicle-availability",
         permission: "car.view",
+      },
+    ],
+  },
+  {
+    label: "Admin Panel",
+    icon: Settings,
+    permission: ["users.view", "audit_logs.view", "permissions.view"],
+    children: [
+      {
+        label: "Permission",
+        icon: ShieldCheck,
+        path: "/permission",
+        permission: "permissions.view",
+      },
+      {
+        label: "User Management",
+        icon: Users,
+        path: "/users",
+        permission: "users.view",
+      },
+      {
+        label: "Audit Logs",
+        icon: ScrollText,
+        path: "/audit-logs",
+        permission: "audit_logs.view",
       },
     ],
   },

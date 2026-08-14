@@ -5,7 +5,7 @@ import { fetchSystemStatus } from "../dashboard.api";
 import { useAuthStore } from "../../../features/auth/useAuthStore";
 import { hasPermission } from "../../../lib/permissions";
 import { Badge } from "../../../shared/components";
-import { DashboardCard, WidgetErrorState, WidgetSkeleton } from "./DashboardCard";
+import { DashboardCard, WidgetEmptyState, WidgetErrorState, WidgetSkeleton } from "./DashboardCard";
 
 export function SystemStatusCard() {
   const permissions = useAuthStore((state) => state.user?.permissions) ?? [];
@@ -45,7 +45,11 @@ export function SystemStatusCard() {
             onRetry={() => void refetch()}
           />
         </div>
-      ) : !data ? null : (
+      ) : !data ? null : data.services.length === 0 ? (
+        <div className="p-4">
+          <WidgetEmptyState message="No monitored services." />
+        </div>
+      ) : (
         <div className="table-shell">
           <div className="table-scroll">
             <table className="min-w-[520px] table-fixed border-collapse">
