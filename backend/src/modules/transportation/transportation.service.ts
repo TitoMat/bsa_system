@@ -341,6 +341,85 @@ export class TransportationService {
     };
   }
 
+  /**
+   * Lean calendar feed — single indexed range scan on scheduled_pickup_at,
+   * no route_geometry / stops / passengers payload, no pagination loop.
+   * Index: idx_transportation_requests_pickup_at (R3 migration).
+   */
+  async getCalendarEvents(from?: string, to?: string) {
+    type CalendarRow = {
+      request_id: string;
+      request_number: string;
+      title: string;
+      priority: string;
+      status: string;
+      trip_type: string;
+      passenger_count: number;
+      scheduled_pickup_at: Date;
+      expected_end_at: Date | null;
+      expected_return_at: Date | null;
+      pickup_address: string;
+      destination_address: string;
+      d_name: string | null;
+      v_plate: string | null;
+    };
+
+    const qb = this.requestRepo
+      .createQueryBuilder('r')
+      .leftJoin(
+        'fleet_assignments',
+        'fa',
+        "fa.transportation_request_id = r.id AND fa.status = 'ACTIVE'",
+      )
+      .leftJoin('drivers', 'd', 'd.id = fa.driver_id')
+      .leftJoin('cars', 'v', 'v.id = fa.vehicle_id')
+      .select([
+        'r.id AS request_id',
+        'r.request_number AS request_number',
+        'r.title AS title',
+        'r.priority AS priority',
+        'r.status AS status',
+        'r.trip_type AS trip_type',
+        'r.passenger_count AS passenger_count',
+        'r.scheduled_pickup_at AS scheduled_pickup_at',
+        'r.expected_end_at AS expected_end_at',
+        'r.expected_return_at AS expected_return_at',
+        'r.pickup_address AS pickup_address',
+        'r.destination_address AS destination_address',
+        'd.name AS d_name',
+        'v.plate_number AS v_plate',
+      ]);
+
+    if (from) {
+      qb.andWhere('r.scheduled_pickup_at >= :from', { from });
+    }
+
+    if (to) {
+      qb.andWhere('r.scheduled_pickup_at <= :to', { to });
+    }
+
+    const rows = await qb
+      .orderBy('r.scheduled_pickup_at', 'ASC')
+      .getRawMany<CalendarRow>();
+
+    return rows.map((r) => ({
+      id: r.request_id,
+      requestNumber: r.request_number,
+      title: r.title,
+      priority: r.priority,
+      status: r.status,
+      tripType: r.trip_type,
+      passengerCount: r.passenger_count,
+      scheduledPickupAt: r.scheduled_pickup_at,
+      expectedEndAt: r.expected_end_at,
+      expectedReturnAt: r.expected_return_at,
+      pickupAddress: r.pickup_address,
+      destinationAddress: r.destination_address,
+      driver: r.d_name,
+      vehicle: r.v_plate,
+    }));
+  }
+
   async findById(id: string) {
     const request = await this.requestRepo.findOne({
       where: { id },

@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { CalendarDays, CalendarX2, ChevronRight, Clock, RefreshCw } from 'lucide-react';
-import { getTransportationRequests, getTransportationRequest } from '../api/transportation.api';
+import { getCalendarEvents, getTransportationRequest } from '../api/transportation.api';
 import type { TransportationRequest } from '../types/transportation.types';
 import { RequestDetailsModal } from '../components/RequestDetailsModal';
-import { useCalendarState } from '../components/calendar/useCalendarState';
+import { useCalendarState, calendarEventsKey } from '../components/calendar/useCalendarState';
 import { CalendarToolbar } from '../components/calendar/CalendarToolbar';
 import { MiniCalendar } from '../components/calendar/MiniCalendar';
 import { PriorityLegend } from '../components/calendar/PriorityLegend';
@@ -15,27 +16,33 @@ import { DayView } from '../components/calendar/DayView';
 import { AgendaView } from '../components/calendar/AgendaView';
 import { CalendarSkeleton } from '../components/calendar/CalendarSkeleton';
 import type { CalendarEvent } from '../components/calendar/types';
-import { eventColor, formatEventTime, toCalendarEvent } from '../components/calendar/types';
+import { eventColor, formatEventTime, toCalendarEventFromItem } from '../components/calendar/types';
 
 export default function TransportationCalendarPage() {
   const navigate = useNavigate();
   const state = useCalendarState();
-  const [todayEvents, setTodayEvents] = useState<CalendarEvent[]>([]);
 
-  useEffect(() => {
-    const start = dayjs().startOf('day').toISOString();
-    const end = dayjs().endOf('day').toISOString();
-    getTransportationRequests({
-      page: 1,
-      pageSize: 100,
-      scheduledFrom: start,
-      scheduledTo: end,
-      sortBy: 'scheduledPickupAt',
-      sortDirection: 'ASC',
-    })
-      .then((r) => setTodayEvents(r.items.map(toCalendarEvent)))
-      .catch(() => setTodayEvents([]));
-  }, []);
+  // Today's overview: derive from the loaded range when today is visible,
+  // otherwise fall back to a single lean calendar query (cached).
+  const rangeCoversToday = useMemo(
+    () => state.visibleStart.isBefore(dayjs()) && state.visibleEnd.isAfter(dayjs()),
+    [state.visibleStart, state.visibleEnd],
+  );
+  const todayStart = useMemo(() => dayjs().startOf('day').toISOString(), []);
+  const todayEnd = useMemo(() => dayjs().endOf('day').toISOString(), []);
+  const todayQuery = useQuery({
+    queryKey: calendarEventsKey(todayStart, todayEnd),
+    queryFn: () => getCalendarEvents(todayStart, todayEnd),
+    staleTime: 60_000,
+    enabled: !rangeCoversToday,
+  });
+  const todayEvents = useMemo(() => {
+    if (rangeCoversToday) {
+      const today = dayjs().format('YYYY-MM-DD');
+      return state.events.filter((e) => dayjs(e.start).format('YYYY-MM-DD') === today);
+    }
+    return (todayQuery.data ?? []).map(toCalendarEventFromItem);
+  }, [rangeCoversToday, state.events, todayQuery.data]);
 
   const todayCount = todayEvents.length;
   const now = dayjs();

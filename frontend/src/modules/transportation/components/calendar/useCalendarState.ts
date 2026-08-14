@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-import { getTransportationRequests } from '../../api/transportation.api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getCalendarEvents } from '../../api/transportation.api';
 import type { TransportationPriority } from '../../types/transportation.types';
 import type { CalendarEvent, CalendarView } from './types';
-import { toCalendarEvent } from './types';
+import { toCalendarEventFromItem } from './types';
 
-const PAGE_SIZE = 100;
+export function calendarEventsKey(from: string, to: string) {
+  return ['calendarEvents', from, to] as const;
+}
 
 interface CalendarFilters {
   priority?: TransportationPriority[];
@@ -32,14 +35,14 @@ export interface CalendarState {
   refresh: () => Promise<void>;
 }
 
+const CALENDAR_STALE_TIME_MS = 60_000;
+
 export function useCalendarState(): CalendarState {
   const [view, setView] = useState<CalendarView>('month');
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [filters, setFilters] = useState<CalendarFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const visibleStart = useMemo(() => {
     if (view === 'month') return selectedDate.startOf('month').startOf('week');
@@ -55,52 +58,20 @@ export function useCalendarState(): CalendarState {
     return selectedDate.endOf('month');
   }, [view, selectedDate]);
 
-  const loadEvents = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const start = visibleStart.toISOString();
-      const end = visibleEnd.toISOString();
-      const firstPage = await getTransportationRequests({
-        page: 1,
-        pageSize: PAGE_SIZE,
-        scheduledFrom: start,
-        scheduledTo: end,
-        sortBy: 'scheduledPickupAt',
-        sortDirection: 'ASC',
-      });
+  const from = visibleStart.toISOString();
+  const to = visibleEnd.toISOString();
 
-      const items = [...firstPage.items];
-      if (firstPage.total > firstPage.items.length) {
-        const totalPages = Math.ceil(firstPage.total / PAGE_SIZE);
-        const pages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-        const rest = await Promise.all(
-          pages.map((p) =>
-            getTransportationRequests({
-              page: p,
-              pageSize: PAGE_SIZE,
-              scheduledFrom: start,
-              scheduledTo: end,
-              sortBy: 'scheduledPickupAt',
-              sortDirection: 'ASC',
-            })
-          )
-        );
-        for (const r of rest) items.push(...r.items);
-      }
+  const eventsQuery = useQuery({
+    queryKey: calendarEventsKey(from, to),
+    queryFn: () => getCalendarEvents(from, to),
+    staleTime: CALENDAR_STALE_TIME_MS,
+    placeholderData: (prev) => prev,
+  });
 
-      setEvents(items.map(toCalendarEvent));
-    } catch {
-      setEvents([]);
-      setError('Unable to load calendar events.');
-    } finally {
-      setLoading(false);
-    }
-  }, [visibleStart, visibleEnd]);
-
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
+  const events = useMemo(
+    () => (eventsQuery.data ?? []).map(toCalendarEventFromItem),
+    [eventsQuery.data],
+  );
 
   const filteredEvents = useMemo(() => {
     let result = events;
@@ -139,6 +110,10 @@ export function useCalendarState(): CalendarState {
     });
   }, [view]);
 
+  const refresh = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+  }, [queryClient]);
+
   return {
     view,
     setView,
@@ -152,11 +127,11 @@ export function useCalendarState(): CalendarState {
     setFilters,
     searchQuery,
     setSearchQuery,
-    loading,
-    error,
+    loading: eventsQuery.isFetching,
+    error: eventsQuery.isError ? 'Unable to load calendar events.' : null,
     goToday,
     goPrev,
     goNext,
-    refresh: loadEvents,
+    refresh,
   };
 }

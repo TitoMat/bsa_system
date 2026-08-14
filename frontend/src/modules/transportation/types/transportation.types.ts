@@ -144,6 +144,24 @@ export interface TransportationRequest {
   updatedAt: string;
 }
 
+/** Lean calendar feed item (GET /transportation-requests/calendar). */
+export interface CalendarEventItem {
+  id: string;
+  requestNumber: string;
+  title: string;
+  priority: TransportationPriority;
+  status: string;
+  tripType: TransportationTripType;
+  passengerCount: number;
+  scheduledPickupAt: string;
+  expectedEndAt: string | null;
+  expectedReturnAt: string | null;
+  pickupAddress: string;
+  destinationAddress: string;
+  driver: string | null;
+  vehicle: string | null;
+}
+
 export interface CreateTransportStopDto {
   sequence: number;
   address: string;

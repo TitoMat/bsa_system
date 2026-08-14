@@ -330,3 +330,116 @@ describe('TransportationService submit/approve auto-dispatch wiring', () => {
     expect(forDispatch).toBeUndefined();
   });
 });
+
+describe('TransportationService getCalendarEvents', () => {
+  let service: TransportationService;
+  let qb: {
+    leftJoin: jest.Mock;
+    select: jest.Mock;
+    andWhere: jest.Mock;
+    orderBy: jest.Mock;
+    getRawMany: jest.Mock;
+  };
+  let requestRepo: { createQueryBuilder: jest.Mock };
+
+  const makeRow = (overrides: Record<string, unknown> = {}) => ({
+    request_id: 'req-1',
+    request_number: 'TR-2026-000001',
+    title: 'Airport pickup',
+    priority: 'NORMAL',
+    status: 'DRIVER_ASSIGNED',
+    trip_type: 'ONE_WAY',
+    passenger_count: 2,
+    scheduled_pickup_at: new Date('2026-08-10T08:00:00Z'),
+    expected_end_at: new Date('2026-08-10T10:00:00Z'),
+    expected_return_at: null,
+    pickup_address: 'Home',
+    destination_address: 'Airport',
+    d_name: 'Juan Dela Cruz',
+    v_plate: 'XYZ-123',
+    ...overrides,
+  });
+
+  beforeEach(async () => {
+    qb = {
+      leftJoin: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn(),
+    };
+    requestRepo = { createQueryBuilder: jest.fn().mockReturnValue(qb) };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TransportationService,
+        {
+          provide: getRepositoryToken(TransportationRequest),
+          useValue: requestRepo,
+        },
+        { provide: getRepositoryToken(TransportStop), useValue: {} },
+        { provide: getRepositoryToken(TransportPassenger), useValue: {} },
+        { provide: getRepositoryToken(TransportAssignment), useValue: {} },
+        { provide: getRepositoryToken(TransportStatusHistory), useValue: {} },
+        { provide: getRepositoryToken(TransportTripEvent), useValue: {} },
+        { provide: getRepositoryToken(Driver), useValue: {} },
+        { provide: getRepositoryToken(Car), useValue: {} },
+        {
+          provide: AuditService,
+          useValue: { log: jest.fn().mockResolvedValue(undefined) },
+        },
+        { provide: DataSource, useValue: {} },
+        { provide: ConfigService, useValue: {} },
+        { provide: FleetDispatchService, useValue: {} },
+      ],
+    }).compile();
+
+    service = module.get<TransportationService>(TransportationService);
+  });
+
+  it('returns a lean event list with driver/vehicle names from the ACTIVE assignment', async () => {
+    qb.getRawMany.mockResolvedValue([makeRow()]);
+
+    const result = await service.getCalendarEvents(
+      '2026-08-01T00:00:00.000Z',
+      '2026-08-31T23:59:59.999Z',
+    );
+
+    expect(requestRepo.createQueryBuilder).toHaveBeenCalledWith('r');
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      'r.scheduled_pickup_at >= :from',
+      { from: '2026-08-01T00:00:00.000Z' },
+    );
+    expect(qb.andWhere).toHaveBeenCalledWith(
+      'r.scheduled_pickup_at <= :to',
+      { to: '2026-08-31T23:59:59.999Z' },
+    );
+    expect(qb.orderBy).toHaveBeenCalledWith('r.scheduled_pickup_at', 'ASC');
+    expect(result).toEqual([
+      {
+        id: 'req-1',
+        requestNumber: 'TR-2026-000001',
+        title: 'Airport pickup',
+        priority: 'NORMAL',
+        status: 'DRIVER_ASSIGNED',
+        tripType: 'ONE_WAY',
+        passengerCount: 2,
+        scheduledPickupAt: new Date('2026-08-10T08:00:00Z'),
+        expectedEndAt: new Date('2026-08-10T10:00:00Z'),
+        expectedReturnAt: null,
+        pickupAddress: 'Home',
+        destinationAddress: 'Airport',
+        driver: 'Juan Dela Cruz',
+        vehicle: 'XYZ-123',
+      },
+    ]);
+  });
+
+  it('skips the scheduled range filter when no from/to are provided', async () => {
+    qb.getRawMany.mockResolvedValue([]);
+
+    await service.getCalendarEvents();
+
+    expect(qb.andWhere).not.toHaveBeenCalled();
+  });
+});

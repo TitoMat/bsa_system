@@ -5,6 +5,7 @@ import type {
   UpdateTransportationRequestDto,
   QueryTransportationRequestDto,
   PaginatedResponse,
+  CalendarEventItem,
   MonitoringSummary,
   TransportAssignment,
   TransportTripEvent,
@@ -30,6 +31,11 @@ export async function getTransportationRequests(query: QueryTransportationReques
 export async function getTransportationRequest(id: string): Promise<TransportationRequest> {
   const response = await api.get(`/transportation-requests/${id}`);
   return response.data as TransportationRequest;
+}
+
+export async function getCalendarEvents(from?: string, to?: string): Promise<CalendarEventItem[]> {
+  const response = await api.get('/transportation-requests/calendar', { params: { from, to } });
+  return response.data as CalendarEventItem[];
 }
 
 export async function updateTransportationRequest(id: string, data: UpdateTransportationRequestDto): Promise<TransportationRequest> {

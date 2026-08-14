@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import type {
+  CalendarEventItem,
   TransportationPriority,
   TransportationRequest,
 } from '../../types/transportation.types';
@@ -48,6 +49,28 @@ export function toCalendarEvent(r: TransportationRequest): CalendarEvent {
     passengerCount: r.passengerCount,
     driver: r.assignments?.[0]?.driver?.name ?? (r.assignedDriverId ? 'Assigned' : null),
     vehicle: r.assignments?.[0]?.vehicle?.plateNumber ?? (r.assignedVehicleId ? 'Assigned' : null),
+  };
+}
+
+export function toCalendarEventFromItem(r: CalendarEventItem): CalendarEvent {
+  const start = r.scheduledPickupAt;
+  const end =
+    r.expectedReturnAt && dayjs(r.expectedReturnAt).isAfter(start)
+      ? r.expectedReturnAt
+      : dayjs(start).add(2, 'hour').toISOString();
+  return {
+    id: r.id,
+    requestNumber: r.requestNumber,
+    title: `${r.requestNumber}: ${r.title}`,
+    start,
+    end,
+    priority: r.priority,
+    status: r.status,
+    pickupAddress: r.pickupAddress,
+    destinationAddress: r.destinationAddress,
+    passengerCount: r.passengerCount,
+    driver: r.driver,
+    vehicle: r.vehicle,
   };
 }
 

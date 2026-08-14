@@ -20,6 +20,7 @@ import { TransportationService } from './transportation.service';
 import { CreateTransportationRequestDto } from './dto/create-transportation-request.dto';
 import { UpdateTransportationRequestDto } from './dto/update-transportation-request.dto';
 import { QueryTransportationRequestDto } from './dto/query-transportation-request.dto';
+import { CalendarQueryDto } from './dto/calendar-query.dto';
 import {
   ApproveRequestDto,
   RejectRequestDto,
@@ -62,6 +63,15 @@ export class TransportationController {
   @ApiOperation({ summary: 'List transportation requests' })
   findAll(@Query() query: QueryTransportationRequestDto) {
     return this.transportationService.findAll(query);
+  }
+
+  @Get('calendar')
+  @Permissions(PERMISSIONS.TRANSPORTATION_REQUESTS_VIEW_OWN)
+  @ApiOperation({
+    summary: 'Get lean calendar events in a scheduled-pickup range',
+  })
+  getCalendarEvents(@Query() query: CalendarQueryDto) {
+    return this.transportationService.getCalendarEvents(query.from, query.to);
   }
 
   @Get('monitoring/summary')
