@@ -60,10 +60,16 @@ if [[ ! -d "$BSA_APP_DIR/.git" ]]; then
 fi
 
 cd "$BSA_APP_DIR"
-info "Updating repository to origin/$BSA_GIT_BRANCH"
-git fetch origin
-git reset --hard "origin/$BSA_GIT_BRANCH"
-ok "Repository updated"
+
+# The repo update can replace this very script while bash is still reading it,
+# so re-exec ourselves once after the update to run the freshly pulled version.
+if [[ "${BSA_SELF_UPDATED:-0}" == "0" ]]; then
+  info "Updating repository to origin/$BSA_GIT_BRANCH"
+  git fetch origin
+  git reset --hard "origin/$BSA_GIT_BRANCH"
+  ok "Repository updated"
+  BSA_SELF_UPDATED=1 exec bash "$SCRIPT_DIR/run-prod.sh"
+fi
 
 info "Building and starting containers"
 docker_compose up -d --build
